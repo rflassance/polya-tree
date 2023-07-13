@@ -1,0 +1,5 @@
+Package: PolyaTree
+Type: Package
+Title: Polya Tree process
+Version: 0.0.1.0
+RoxygenNote: 7.1.2
