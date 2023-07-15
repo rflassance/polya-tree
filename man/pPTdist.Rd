@@ -4,7 +4,7 @@
 \alias{pPTdist}
 \title{Distribution function}
 \usage{
-pPTdist(X, PT.model, dist.sample, pdist, log = F)
+pPTdist(X, PT.model, dist.sample, pdist, log = FALSE)
 }
 \description{
 Distribution function for a distribution function drawn from the PT process.
@@ -21,5 +21,8 @@ post <- PT.posterior(Y = Y, qdist = qnorm, layers = 3);
 dist.sample <- rPT(n = 1, PT.model = post, seed = 42)[,,1];
 
 #Sample 5 observations from each distribution
-print(pPTdist(X = c(-1,0,1), PT.model = post, dist.sample = dist.sample, pdist = pnorm, log = F));
+print(
+    pPTdist(X = c(-1,0,1), PT.model = post, dist.sample = dist.sample,
+    pdist = pnorm, log = FALSE)
+    );
 }

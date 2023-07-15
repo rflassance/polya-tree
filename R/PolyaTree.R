@@ -6,11 +6,6 @@
 ############                                               ############
 #######################################################################
 
-#Load dependencies
-library(parallel)
-library(dplyr)
-library(Matrix)
-
 #' Theta partition at each layer.
 #'
 #' Sample space partitions based on the quantile function for each layer. Except for infinities, intervals are closed on the left and open on the right.
@@ -39,7 +34,7 @@ theta.part <- function(layer){
 PT.prior <- function(qdist, layers, vartype = 'continuous', v = 1){
   #Wrong vartype
   if(!(vartype %in% c('continuous', 'discrete', 'singular'))){
-    stop("Please specify an adequate vartype (continuous, discrete or singular).")
+  stop("Please specify an adequate vartype (continuous, discrete or singular).")
   }
   
   #Layer of a given theta
@@ -102,21 +97,22 @@ PT.posterior <- function(Y, #Data
   
   last_layer <- max(PT.model$layer)
   PT_ind <-which(PT.model$layer == last_layer) 
-  all_ints <- c(as.numeric(t(as.matrix(PT.model[PT_ind, 2:3]))), as.numeric(tail(PT.model,1)[4]))
+  all_ints <- c(as.numeric(t(as.matrix(PT.model[PT_ind, 2:3]))),
+                as.numeric(utils::tail(PT.model,1)[4]))
   
   mat.up <- matrix(0, nrow = 2^(last_layer - 1), ncol = 2)
   
   if(cores == 1) where_y <- sapply(Y, function(x) findInterval(x, all_ints) - 1)
   else{
-    cl <- makeCluster(cores)
-    where_y <- parSapply(cl, Y, function(x, all_ints) findInterval(x, all_ints) - 1, all_ints = all_ints)
-    stopCluster(cl)
+    cl <- parallel::makeCluster(cores)
+    where_y <- parallel::parSapply(cl, Y, function(x, all_ints) findInterval(x, all_ints) - 1, all_ints = all_ints)
+    parallel::stopCluster(cl)
   }
   row_ind <- as.integer(where_y/2) + 1
   col_ref <- where_y%%2 + 1
   ind_n <- data.frame(row_ind, col_ref) %>%
-    group_by(row_ind, col_ref) %>%
-    summarise(num = n(), .groups = 'drop')
+    dplyr::group_by(row_ind, col_ref) %>%
+    dplyr::summarise(num = dplyr::n(), .groups = 'drop')
   
   for(i in 1:dim(ind_n)[1]){
     my_ind <- ind_n[i,]
@@ -159,7 +155,7 @@ rPT <- function(n, PT.model, seed = NULL){
   sam_mat <- array(NA, c(par_num, 2, n))
   set.seed(42)
   for(k in 1:n){
-    theta <- rbeta(par_num, PT.model$alpha0, PT.model$alpha1)
+    theta <- stats::rbeta(par_num, PT.model$alpha0, PT.model$alpha1)
     log_prob <- log_theta <- log(as.vector(rbind(theta, 1-theta)))
     for(layer in 1:(last_layer-1)){
       ind <- (sum(2^(1:layer)) + 1):(2*par_num)
@@ -192,7 +188,9 @@ rPT <- function(n, PT.model, seed = NULL){
 #' dist.samples <- rPT(n = 10, PT.model = post, seed = 42);
 #' 
 #' #Sample 5 observations from each distribution
-#' print(rPTdist(n = 5, PT.model = post, dist.samples = dist.samples, pdist = pnorm, qdist = qnorm, seed = 42));
+#' print(
+#'     rPTdist(n = 5, PT.model = post, dist.samples = dist.samples,
+#'     pdist = pnorm, qdist = qnorm, seed = 42));
 #' @export
 rPTdist <- function(n, PT.model, dist.samples, pdist, qdist, seed = NULL){
   last_layer <- max(PT.model$layer)
@@ -208,7 +206,8 @@ rPTdist <- function(n, PT.model, dist.samples, pdist, qdist, seed = NULL){
     sam_int <- matrix(NA, nrow = length(row_ind), ncol = 2)
     sam_int[which(col_ref),] <- as.matrix(PT.model[row_ind[col_ref], 2:3])
     sam_int[which(!col_ref),] <- as.matrix(PT.model[row_ind[!col_ref], 3:4])
-    sam_obs[,j] <- qdist(runif(n, pdist(sam_int[,1]), pdist(sam_int[,2])))
+    sam_obs[,j] <- qdist(stats::runif(n, pdist(sam_int[,1]),
+                                      pdist(sam_int[,2])))
   }
   return(sam_obs)
 }
@@ -221,7 +220,7 @@ rPTdist <- function(n, PT.model, dist.samples, pdist, qdist, seed = NULL){
 #' @dist.sample probability function previously drawn from the PT.
 #' @ddist centering density function from the prior.
 #' @pdist centering distribution function from the prior.
-#' @log return the logarithm of the density, default is 'F'.
+#' @log return the logarithm of the density, default is FALSE.
 #' @examples
 #' #Drawing from data 
 #' set.seed(42);
@@ -234,12 +233,15 @@ rPTdist <- function(n, PT.model, dist.samples, pdist, qdist, seed = NULL){
 #' dist.sample <- rPT(n = 1, PT.model = post, seed = 42)[,,1];
 #' 
 #' #Sample 5 observations from each distribution
-#' print(dPTdist(X = c(-1,0,1), PT.model = post, dist.sample = dist.sample, ddist = dnorm, pdist = pnorm, log = F));
+#' print(
+#'     dPTdist(X = c(-1,0,1), PT.model = post, dist.sample = dist.sample,
+#'     ddist = dnorm, pdist = pnorm, log = FALSE));
 #' @export
-dPTdist <- function(X, PT.model, dist.sample, ddist, pdist, log = F){
+dPTdist <- function(X, PT.model, dist.sample, ddist, pdist, log = FALSE){
   last_layer <- max(PT.model$layer)
   ind <- which(PT.model$layer == last_layer)
-  all_ints <- c(as.numeric(t(as.matrix(PT.model[ind, 2:3]))), as.numeric(tail(PT.model,1)[4]))
+  all_ints <- c(as.numeric(t(as.matrix(PT.model[ind, 2:3]))),
+                as.numeric(utils::tail(PT.model,1)[4]))
   den_x <- numeric()
   len_x <- numeric()
   for(i in 1:length(X)){
@@ -263,7 +265,7 @@ dPTdist <- function(X, PT.model, dist.sample, ddist, pdist, log = F){
 #' @PT.model Polya tree model, either from PT.prior or PT.posterior.
 #' @dist.sample probability function previously drawn from the PT.
 #' @pdist centering distribution function from the prior.
-#' @log return the logarithm of the density, default is 'F'.
+#' @log return the logarithm of the density, default is FALSE.
 #' @examples
 #' #Drawing from data 
 #' set.seed(42);
@@ -276,12 +278,16 @@ dPTdist <- function(X, PT.model, dist.sample, ddist, pdist, log = F){
 #' dist.sample <- rPT(n = 1, PT.model = post, seed = 42)[,,1];
 #' 
 #' #Sample 5 observations from each distribution
-#' print(pPTdist(X = c(-1,0,1), PT.model = post, dist.sample = dist.sample, pdist = pnorm, log = F));
+#' print(
+#'     pPTdist(X = c(-1,0,1), PT.model = post, dist.sample = dist.sample,
+#'     pdist = pnorm, log = FALSE)
+#'     );
 #' @export
-pPTdist <- function(X, PT.model, dist.sample, pdist, log = F){
+pPTdist <- function(X, PT.model, dist.sample, pdist, log = FALSE){
   last_layer <- max(PT.model$layer)
   ind <- which(PT.model$layer == last_layer)
-  all_ints <- c(as.numeric(t(as.matrix(PT.model[ind, 2:3]))), as.numeric(tail(PT.model,1)[4]))
+  all_ints <- c(as.numeric(t(as.matrix(PT.model[ind, 2:3]))),
+                as.numeric(utils::tail(PT.model,1)[4]))
   prob_x <- numeric()
   for(i in 1:length(X)){
     x <- X[i]
@@ -289,9 +295,10 @@ pPTdist <- function(X, PT.model, dist.sample, pdist, log = F){
     row_ind <- ind[1] + as.integer(where_x/2)
     col_ref <- where_x%%2 + 1
     reg_x <- as.numeric(PT.model[row_ind, 1:2 + col_ref])
-    prob_x[i] <- (row_ind > ind[1])*sum(exp(dist.sample[ind[1]:(row_ind-1), ])) +
+    prob_x[i] <- (row_ind > ind[1])*sum(exp(dist.sample[ind[1]:(row_ind-1), ]))+
       (col_ref == 2)*exp(dist.sample[row_ind, 1]) + 
-      exp(dist.sample[row_ind, col_ref])*(pdist(x) - pdist(reg_x[1]))/(pdist(reg_x[2]) - pdist(reg_x[1]))
+      exp(dist.sample[row_ind, col_ref])*(pdist(x) - pdist(reg_x[1]))/
+      (pdist(reg_x[2]) - pdist(reg_x[1]))
   }
   if(log) prob_x <- log(prob_x)
   return(prob_x)
@@ -317,7 +324,9 @@ pPTdist <- function(X, PT.model, dist.sample, pdist, log = F){
 #' dist.sample <- rPT(n = 1, PT.model = post, seed = 42)[,,1];
 #' 
 #' #Sample 5 observations from each distribution
-#' print(qPTdist(p = c(.2,.5,.8), PT.model = post, dist.sample = dist.sample, pdist = pnorm, qdist = qnorm));
+#' print(
+#'     qPTdist(p = c(.2,.5,.8), PT.model = post, dist.sample = dist.sample,
+#'     pdist = pnorm, qdist = qnorm));
 #' @export
 qPTdist <- function(p, PT.model, dist.sample, pdist, qdist){
   last_layer <- max(PT.model$layer)
@@ -326,12 +335,14 @@ qPTdist <- function(p, PT.model, dist.sample, pdist, qdist){
   q_p <- numeric()
   for(i in 1:length(p)){
     prob <- p[i]
-    ind_less <- tail(which(cum_probs < prob), 1)
+    ind_less <- utils::tail(which(cum_probs < prob), 1)
     row_ind <- min(sum(c(ind[1], as.integer((ind_less + 1)/2))),
                    dim(PT.model)[1])
     col_ref <- sum(c(ind_less, 0))%%2 + 1
     reg_p <- as.numeric(PT.model[row_ind, 1:2 + col_ref])
-    true_p <- sum(c((prob - cum_probs[ind_less + (col_ref == 2)])*(pdist(reg_p[2]) - pdist(reg_p[1])), pdist(reg_p[1])))
+    true_p <- sum(c((prob - cum_probs[ind_less + (col_ref == 2)])*
+                      (pdist(reg_p[2]) - pdist(reg_p[1])),
+                    pdist(reg_p[1])))
     q_p[i] <- qdist(true_p)
   }
   return(q_p)

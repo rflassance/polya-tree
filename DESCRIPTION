@@ -2,4 +2,15 @@ Package: PolyaTree
 Type: Package
 Title: Polya Tree process
 Version: 0.0.1.0
+Author: Rodrigo F L Lassance
+Maintainer: Rodrigo <rflassance@gmail.com>
+Description: Polya Tree prior process
+Imports:
+    parallel,
+    dplyr,
+    magrittr,
+    utils,
+    stats
+License: GPL-3
+Encoding: UTF-8
 RoxygenNote: 7.1.2

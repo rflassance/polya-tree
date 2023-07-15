@@ -4,7 +4,7 @@
 \alias{dPTdist}
 \title{Density function for a distribution function}
 \usage{
-dPTdist(X, PT.model, dist.sample, ddist, pdist, log = F)
+dPTdist(X, PT.model, dist.sample, ddist, pdist, log = FALSE)
 }
 \description{
 Density function for a distribution function drawn from the PT process.
@@ -21,5 +21,7 @@ post <- PT.posterior(Y = Y, qdist = qnorm, layers = 3);
 dist.sample <- rPT(n = 1, PT.model = post, seed = 42)[,,1];
 
 #Sample 5 observations from each distribution
-print(dPTdist(X = c(-1,0,1), PT.model = post, dist.sample = dist.sample, ddist = dnorm, pdist = pnorm, log = F));
+print(
+    dPTdist(X = c(-1,0,1), PT.model = post, dist.sample = dist.sample,
+    ddist = dnorm, pdist = pnorm, log = FALSE));
 }

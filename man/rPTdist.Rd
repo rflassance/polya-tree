@@ -21,5 +21,7 @@ post <- PT.posterior(Y = Y, qdist = qnorm, layers = 3);
 dist.samples <- rPT(n = 10, PT.model = post, seed = 42);
 
 #Sample 5 observations from each distribution
-print(rPTdist(n = 5, PT.model = post, dist.samples = dist.samples, pdist = pnorm, qdist = qnorm, seed = 42));
+print(
+    rPTdist(n = 5, PT.model = post, dist.samples = dist.samples,
+    pdist = pnorm, qdist = qnorm, seed = 42));
 }
