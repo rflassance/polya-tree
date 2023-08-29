@@ -6,6 +6,9 @@
 \usage{
 theta.part(layer)
 }
+\arguments{
+\item{layer}{number of layers.}
+}
 \description{
 Sample space partitions based on the quantile function for each layer. Except for infinities, intervals are closed on the left and open on the right.
 }

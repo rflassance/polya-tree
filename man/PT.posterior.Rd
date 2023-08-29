@@ -14,6 +14,21 @@ PT.posterior(
   cores = 1
 )
 }
+\arguments{
+\item{Y}{dataset, must be a vector.}
+
+\item{qdist}{quantile function of the centering distribution, default is NULL.}
+
+\item{layers}{number of layers of the prior, default is the log of the sample size in base 2.}
+
+\item{vartype}{variable type, default is 'continuous'.}
+
+\item{v}{hyperparameter related to how close the prior is to the centering distribution, default is 1.}
+
+\item{PT.model}{Polya tree prior to be updated, default is NULL.}
+
+\item{cores}{number of cores for parallel processing, default is 1.}
+}
 \description{
 Posterior of the Polya tree process based on PT.prior and data
 }

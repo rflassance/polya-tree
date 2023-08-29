@@ -6,6 +6,17 @@
 \usage{
 qPTdist(p, PT.model, dist.sample, pdist, qdist)
 }
+\arguments{
+\item{p}{probabilities to be checked.}
+
+\item{PT.model}{Polya tree model, either from PT.prior or PT.posterior.}
+
+\item{dist.sample}{probability function previously drawn from the PT.}
+
+\item{pdist}{centering distribution function from the prior.}
+
+\item{qdist}{centering quantile function from the prior.}
+}
 \description{
 Quantile function for a distribution function drawn from the PT process.
 }

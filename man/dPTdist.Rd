@@ -6,6 +6,19 @@
 \usage{
 dPTdist(X, PT.model, dist.sample, ddist, pdist, log = FALSE)
 }
+\arguments{
+\item{X}{values to be checked.}
+
+\item{PT.model}{Polya tree model, either from PT.prior or PT.posterior.}
+
+\item{dist.sample}{probability function previously drawn from the PT.}
+
+\item{ddist}{centering density function from the prior.}
+
+\item{pdist}{centering distribution function from the prior.}
+
+\item{log}{return the logarithm of the density, default is FALSE.}
+}
 \description{
 Density function for a distribution function drawn from the PT process.
 }

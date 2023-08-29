@@ -6,6 +6,15 @@
 \usage{
 PT.prior(qdist, layers, vartype = "continuous", v = 1)
 }
+\arguments{
+\item{qdist}{quantile function of the centering distribution.}
+
+\item{layers}{number of layers of the prior.}
+
+\item{vartype}{variable type, default is 'continuous'.}
+
+\item{v}{hyperparameter related to how close the prior is to the centering distribution, default is 1.}
+}
 \description{
 Specifies the partially specified Polya tree prior
 }

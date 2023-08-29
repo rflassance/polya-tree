@@ -6,6 +6,13 @@
 \usage{
 rPT(n, PT.model, seed = NULL)
 }
+\arguments{
+\item{n}{sample size.}
+
+\item{PT.model}{Polya tree model, either from PT.prior or PT.posterior.}
+
+\item{seed}{seed for sampling, default is NULL.}
+}
 \description{
 Draws a probability distribution function based from the Polya tree process. Last column is the log probability of sampling an observation from that interval.
 }

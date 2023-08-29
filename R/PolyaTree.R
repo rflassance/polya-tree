@@ -6,10 +6,9 @@
 ############                                               ############
 #######################################################################
 
-#' Theta partition at each layer.
-#'
-#' Sample space partitions based on the quantile function for each layer. Except for infinities, intervals are closed on the left and open on the right.
-#' @layer number of layers.
+#' @title Theta partition at each layer.
+#' @description Sample space partitions based on the quantile function for each layer. Except for infinities, intervals are closed on the left and open on the right.
+#' @param layer number of layers.
 #' @export
 theta.part <- function(layer){
   limits <- matrix(NA, nrow = 2^(layer-1), ncol = 3)
@@ -21,13 +20,12 @@ theta.part <- function(layer){
   return(limits)
 }
 
-#' Polya tree prior
-#'
-#' Specifies the partially specified Polya tree prior
-#' @qdist quantile function of the centering distribution.
-#' @layers number of layers of the prior.
-#' @vartype variable type, default is 'continuous'.
-#' @v hyperparameter related to how close the prior is to the centering distribution, default is 1.
+#' @title Polya tree prior
+#' @description Specifies the partially specified Polya tree prior
+#' @param qdist quantile function of the centering distribution.
+#' @param layers number of layers of the prior.
+#' @param vartype variable type, default is 'continuous'.
+#' @param v hyperparameter related to how close the prior is to the centering distribution, default is 1.
 #' @examples 
 #' print(PT.prior(qdist = qnorm, layers = 3));
 #' @export
@@ -58,16 +56,15 @@ PT.prior <- function(qdist, layers, vartype = 'continuous', v = 1){
   return(PT.model)
 }
 
-#' Polya tree posterior
-#'
-#' Posterior of the Polya tree process based on PT.prior and data
-#' @Y dataset, must be a vector.
-#' @qdist quantile function of the centering distribution, default is NULL.
-#' @layers number of layers of the prior, default is the log of the sample size in base 2.
-#' @vartype variable type, default is 'continuous'.
-#' @v hyperparameter related to how close the prior is to the centering distribution, default is 1.
-#' @PT.model Polya tree prior to be updated, default is NULL.
-#' @cores number of cores for parallel processing, default is 1.
+#' @title Polya tree posterior
+#' @description Posterior of the Polya tree process based on PT.prior and data
+#' @param Y dataset, must be a vector.
+#' @param qdist quantile function of the centering distribution, default is NULL.
+#' @param layers number of layers of the prior, default is the log of the sample size in base 2.
+#' @param vartype variable type, default is 'continuous'.
+#' @param v hyperparameter related to how close the prior is to the centering distribution, default is 1.
+#' @param PT.model Polya tree prior to be updated, default is NULL.
+#' @param cores number of cores for parallel processing, default is 1.
 #' @examples
 #' #Drawing from data 
 #' set.seed(42);
@@ -131,12 +128,11 @@ PT.posterior <- function(Y, #Data
   return(PT.model)
 }
 
-#' Draw from the Polya tree process
-#'
-#' Draws a probability distribution function based from the Polya tree process. Last column is the log probability of sampling an observation from that interval.
-#' @n sample size.
-#' @PT.model Polya tree model, either from PT.prior or PT.posterior.
-#' @seed seed for sampling, default is NULL.
+#' @title Draw from the Polya tree process
+#' @description Draws a probability distribution function based from the Polya tree process. Last column is the log probability of sampling an observation from that interval.
+#' @param n sample size.
+#' @param PT.model Polya tree model, either from PT.prior or PT.posterior.
+#' @param seed seed for sampling, default is NULL.
 #' @examples
 #' #Drawing from data 
 #' set.seed(42);
@@ -164,18 +160,18 @@ rPT <- function(n, PT.model, seed = NULL){
     }
     sam_mat[,,k] <- matrix(log_prob, ncol = 2, byrow = T)
   }
+  rownames(sam_mat) <- PT.model$layer
   return(sam_mat)
 }
 
-#' Draw observations from the probability distributions of the PT
-#'
-#' Draws observations from probability distribution functions generated from the Polya tree process.
-#' @n sample size.
-#' @PT.model Polya tree model, either from PT.prior or PT.posterior.
-#' @dist.samples probability functions previously drawn from the PT.
-#' @pdist centering distribution function from the prior.
-#' @qdist centering quantile function from the prior.
-#' @seed seed for sampling, default is NULL.
+#' @title Draw observations from the probability distributions of the PT
+#' @description Draws observations from probability distribution functions generated from the Polya tree process.
+#' @param n sample size.
+#' @param PT.model Polya tree model, either from PT.prior or PT.posterior.
+#' @param dist.samples probability functions previously drawn from the PT.
+#' @param pdist centering distribution function from the prior.
+#' @param qdist centering quantile function from the prior.
+#' @param seed seed for sampling, default is NULL.
 #' @examples
 #' #Drawing from data 
 #' set.seed(42);
@@ -212,15 +208,14 @@ rPTdist <- function(n, PT.model, dist.samples, pdist, qdist, seed = NULL){
   return(sam_obs)
 }
 
-#' Density function for a distribution function
-#'
-#' Density function for a distribution function drawn from the PT process.
-#' @X values to be checked.
-#' @PT.model Polya tree model, either from PT.prior or PT.posterior.
-#' @dist.sample probability function previously drawn from the PT.
-#' @ddist centering density function from the prior.
-#' @pdist centering distribution function from the prior.
-#' @log return the logarithm of the density, default is FALSE.
+#' @title Density function for a distribution function
+#' @description Density function for a distribution function drawn from the PT process.
+#' @param X values to be checked.
+#' @param PT.model Polya tree model, either from PT.prior or PT.posterior.
+#' @param dist.sample probability function previously drawn from the PT.
+#' @param ddist centering density function from the prior.
+#' @param pdist centering distribution function from the prior.
+#' @param log return the logarithm of the density, default is FALSE.
 #' @examples
 #' #Drawing from data 
 #' set.seed(42);
@@ -258,14 +253,13 @@ dPTdist <- function(X, PT.model, dist.sample, ddist, pdist, log = FALSE){
   return(den_x)
 }
 
-#' Distribution function
-#'
-#' Distribution function for a distribution function drawn from the PT process.
-#' @X values to be checked.
-#' @PT.model Polya tree model, either from PT.prior or PT.posterior.
-#' @dist.sample probability function previously drawn from the PT.
-#' @pdist centering distribution function from the prior.
-#' @log return the logarithm of the density, default is FALSE.
+#' @title Distribution function
+#' @description Distribution function for a distribution function drawn from the PT process.
+#' @param X values to be checked.
+#' @param PT.model Polya tree model, either from PT.prior or PT.posterior.
+#' @param dist.sample probability function previously drawn from the PT.
+#' @param pdist centering distribution function from the prior.
+#' @param log return the logarithm of the density, default is FALSE.
 #' @examples
 #' #Drawing from data 
 #' set.seed(42);
@@ -304,14 +298,13 @@ pPTdist <- function(X, PT.model, dist.sample, pdist, log = FALSE){
   return(prob_x)
 }
 
-#' Quantile function
-#'
-#' Quantile function for a distribution function drawn from the PT process.
-#' @X values to be checked.
-#' @PT.model Polya tree model, either from PT.prior or PT.posterior.
-#' @dist.sample probability function previously drawn from the PT.
-#' @pdist centering distribution function from the prior.
-#' @qdist centering quantile function from the prior.
+#' @title Quantile function
+#' @description Quantile function for a distribution function drawn from the PT process.
+#' @param p probabilities to be checked.
+#' @param PT.model Polya tree model, either from PT.prior or PT.posterior.
+#' @param dist.sample probability function previously drawn from the PT.
+#' @param pdist centering distribution function from the prior.
+#' @param qdist centering quantile function from the prior.
 #' @examples
 #' #Drawing from data 
 #' set.seed(42);

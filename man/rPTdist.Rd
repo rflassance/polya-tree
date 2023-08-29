@@ -6,6 +6,19 @@
 \usage{
 rPTdist(n, PT.model, dist.samples, pdist, qdist, seed = NULL)
 }
+\arguments{
+\item{n}{sample size.}
+
+\item{PT.model}{Polya tree model, either from PT.prior or PT.posterior.}
+
+\item{dist.samples}{probability functions previously drawn from the PT.}
+
+\item{pdist}{centering distribution function from the prior.}
+
+\item{qdist}{centering quantile function from the prior.}
+
+\item{seed}{seed for sampling, default is NULL.}
+}
 \description{
 Draws observations from probability distribution functions generated from the Polya tree process.
 }
