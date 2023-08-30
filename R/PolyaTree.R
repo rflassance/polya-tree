@@ -132,6 +132,7 @@ PT.posterior <- function(Y, #Data
 #' @description Draws a probability distribution function based from the Polya tree process. Last column is the log probability of sampling an observation from that interval.
 #' @param n sample size.
 #' @param PT.model Polya tree model, either from PT.prior or PT.posterior.
+#' @param cores Number of cores to be used, default is 1.
 #' @param seed seed for sampling, default is NULL.
 #' @examples
 #' #Drawing from data 
@@ -144,13 +145,14 @@ PT.posterior <- function(Y, #Data
 #' #Sample 10 distributions from the PT
 #' print(rPT(n = 10, PT.model = post, seed = 42));
 #' @export
-rPT <- function(n, PT.model, seed = NULL){
-  par_num <- dim(PT.model)[1]
-  layers <- unique(PT.model$layer)
-  last_layer <- max(layers)
-  sam_mat <- array(NA, c(par_num, 2, n))
-  set.seed(42)
-  for(k in 1:n){
+rPT <- function(n, PT.model, cores = 1, seed = NULL){
+  
+  get_dist <- function(x, PT.model){
+    par_num <- dim(PT.model)[1]
+    layers <- unique(PT.model$layer)
+    last_layer <- max(layers)
+    sam_mat <- array(NA, c(par_num, 2, n))
+    
     theta <- stats::rbeta(par_num, PT.model$alpha0, PT.model$alpha1)
     log_prob <- log_theta <- log(as.vector(rbind(theta, 1-theta)))
     for(layer in 1:(last_layer-1)){
@@ -158,8 +160,19 @@ rPT <- function(n, PT.model, seed = NULL){
       theta_rep <- log_theta[1:(2*par_num - sum(2^(last_layer + 1 - 1:layer)))]
       log_prob[ind] <- log_prob[ind] + rep(theta_rep, each = 2^layer)
     }
-    sam_mat[,,k] <- matrix(log_prob, ncol = 2, byrow = T)
+    return(matrix(log_prob, ncol = 2, byrow = T))
   }
+  
+  set.seed(42)
+  if(cores == 1){
+    sam_list <- lapply(rep(1, n), function(x) get_dist(x, PT.model))
+  } else{
+    cl <- parallel::makeCluster(cores)
+    sam_list <- parallel::parLapply(cl, rep(1, n), fun = get_dist, PT.model)
+    parallel::stopCluster(cl)
+  }
+  sam_mat <- array(NA, c(dim(PT.model)[1], 2, n))
+  for(k in 1:n) sam_mat[,,k] <- sam_list[[k]]
   rownames(sam_mat) <- PT.model$layer
   return(sam_mat)
 }
